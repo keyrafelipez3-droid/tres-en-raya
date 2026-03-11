@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tres en Raya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --border: #1e1e2e;
+      --accent-x: #ff2d6b;
+      --accent-o: #00e5ff;
+      --accent-win: #ffe600;
+      --text: #e8e8f0;
+      --muted: #5a5a7a;
+      --glow-x: 0 0 20px #ff2d6b88, 0 0 40px #ff2d6b44;
+      --glow-o: 0 0 20px #00e5ff88, 0 0 40px #00e5ff44;
+      --glow-win: 0 0 30px #ffe60088, 0 0 60px #ffe60044;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridMove 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gridMove {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(40px); }
+    }
+
+    /* Screens */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      width: 100%;
+      padding: 20px;
+      animation: fadeIn 0.4s ease;
+    }
+    .screen.active { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── INICIO ── */
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-weight: 900;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-align: center;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+    .logo span.x { color: var(--accent-x); text-shadow: var(--glow-x); }
+    .logo span.o { color: var(--accent-o); text-shadow: var(--glow-o); }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 1rem;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+    }
+
+    .preview-board {
+      display: grid;
+      grid-template-columns: repeat(3, 60px);
+      grid-template-rows: repeat(3, 60px);
+      gap: 6px;
+      margin-bottom: 40px;
+    }
+    .preview-cell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    .preview-cell.px { color: var(--accent-x); text-shadow: var(--glow-x); }
+    .preview-cell.po { color: var(--accent-o); text-shadow: var(--glow-o); }
+
+    .btn {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 14px 36px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin: 6px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-x), #c4003d);
+      color: #fff;
+      box-shadow: var(--glow-x);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 30px #ff2d6baa, 0 0 60px #ff2d6b55; }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--accent-o);
+      border: 1px solid var(--accent-o);
+      box-shadow: inset 0 0 0 0 var(--accent-o);
+    }
+    .btn-secondary:hover {
+      background: var(--accent-o);
+      color: var(--bg);
+      box-shadow: var(--glow-o);
+      transform: translateY(-2px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+    /* ── INSTRUCCIONES ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 480px;
+      width: 100%;
+    }
+    .card h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      color: var(--accent-o);
+      text-shadow: var(--glow-o);
+    }
+    .rule {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    .rule-num {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-x);
+      background: rgba(255,45,107,0.1);
+      border: 1px solid var(--accent-x);
+      border-radius: 4px;
+      padding: 2px 8px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+    .rule p { color: var(--muted); }
+    .rule p strong { color: var(--text); }
+
+    /* ── JUEGO ── */
+    .game-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 440px;
+      margin-bottom: 24px;
+    }
+    .game-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .score-row {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      max-width: 440px;
+      margin-bottom: 20px;
+    }
+    .score-card {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .score-card.active-x { border-color: var(--accent-x); box-shadow: 0 0 12px #ff2d6b44; }
+    .score-card.active-o { border-color: var(--accent-o); box-shadow: 0 0 12px #00e5ff44; }
+    .score-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .score-label.lx { color: var(--accent-x); }
+    .score-label.lo { color: var(--accent-o); }
+    .score-label.lt { color: var(--muted); }
+    .score-num {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .turn-indicator {
+      font-size: 0.9rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      height: 20px;
+      color: var(--muted);
+      transition: color 0.3s;
+    }
+    .turn-indicator.tx { color: var(--accent-x); }
+    .turn-indicator.to { color: var(--accent-o); }
+
+    /* Board */
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: 100%;
+      max-width: 360px;
+      margin-bottom: 24px;
+    }
+
+    .cell {
+      aspect-ratio: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.8rem, 8vw, 3rem);
+      font-weight: 900;
+      transition: border-color 0.2s, background 0.2s, transform 0.1s;
+      position: relative;
+      overflow: hidden;
+    }
+    .cell:hover:not(.taken) {
+      background: rgba(255,255,255,0.04);
+      border-color: var(--muted);
+      transform: scale(0.97);
+    }
+    .cell.taken { cursor: default; }
+    .cell.cx {
+      color: var(--accent-x);
+      text-shadow: var(--glow-x);
+      border-color: rgba(255,45,107,0.4);
+      animation: popIn 0.25s cubic-bezier(0.17,0.67,0.35,1.3);
+    }
+    .cell.co {
+      color: var(--accent-o);
+      text-shadow: var(--glow-o);
+      border-color: rgba(0,229,255,0.4);
+      animation: popIn 0.25s cubic-bezier(0.17,0.67,0.35,1.3);
+    }
+    .cell.win-cell {
+      background: rgba(255,230,0,0.05);
+      border-color: var(--accent-win) !important;
+      box-shadow: var(--glow-win);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.4); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ── RESULTADO ── */
+    .result-icon {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(3rem, 12vw, 6rem);
+      font-weight: 900;
+      margin-bottom: 16px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    .result-icon.rx { color: var(--accent-x); text-shadow: var(--glow-x); }
+    .result-icon.ro { color: var(--accent-o); text-shadow: var(--glow-o); }
+    .result-icon.rt { color: var(--accent-win); text-shadow: var(--glow-win); }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+
+    .result-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .result-sub {
+      color: var(--muted);
+      font-size: 1rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    .result-scores {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 36px;
+    }
+    .rs-item { text-align: center; }
+    .rs-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .rs-val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .rs-val.vx { color: var(--accent-x); }
+    .rs-val.vo { color: var(--accent-o); }
+    .rs-val.vt { color: var(--muted); }
+
+    .divider {
+      width: 1px;
+      background: var(--border);
+      height: 50px;
+      align-self: center;
+    }
+
+    /* Scanlines overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PANTALLA INICIO -->
+  <div class="screen active" id="screen-inicio">
+    <div class="logo">
+      <span class="x">X</span> vs <span class="o">O</span>
+    </div>
+    <p class="tagline">Tres en Raya</p>
+    <div class="preview-board">
+      <div class="preview-cell px">X</div>
+      <div class="preview-cell"></div>
+      <div class="preview-cell po">O</div>
+      <div class="preview-cell"></div>
+      <div class="preview-cell px">X</div>
+      <div class="preview-cell"></div>
+      <div class="preview-cell po">O</div>
+      <div class="preview-cell"></div>
+      <div class="preview-cell px">X</div>
+    </div>
+    <button class="btn btn-primary" onclick="goto('screen-juego'); initGame()">JUGAR</button>
+    <button class="btn btn-secondary" onclick="goto('screen-instrucciones')">INSTRUCCIONES</button>
+  </div>
+
+  <!-- PANTALLA INSTRUCCIONES -->
+  <div class="screen" id="screen-instrucciones">
+    <div class="card">
+      <h2>Cómo Jugar</h2>
+      <div class="rule">
+        <span class="rule-num">01</span>
+        <p>El juego es para <strong>2 jugadores</strong>: <strong style="color:var(--accent-x)">X</strong> y <strong style="color:var(--accent-o)">O</strong>, que se turnan.</p>
+      </div>
+      <div class="rule">
+        <span class="rule-num">02</span>
+        <p>Haz clic en cualquier celda vacía para colocar tu símbolo.</p>
+      </div>
+      <div class="rule">
+        <span class="rule-num">03</span>
+        <p>Gana quien logre <strong>3 en línea</strong>: horizontal, vertical o diagonal.</p>
+      </div>
+      <div class="rule">
+        <span class="rule-num">04</span>
+        <p>Si se llenan todas las celdas sin ganador, es <strong>empate</strong>.</p>
+      </div>
+      <div class="rule">
+        <span class="rule-num">05</span>
+        <p>Al finalizar cada ronda puedes <strong>reiniciar</strong> o <strong>volver al inicio</strong>.</p>
+      </div>
+    </div>
+    <div style="margin-top:24px">
+      <button class="btn btn-primary" onclick="goto('screen-juego'); initGame()">JUGAR AHORA</button>
+      <button class="btn btn-ghost" onclick="goto('screen-inicio')">VOLVER</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA JUEGO -->
+  <div class="screen" id="screen-juego">
+    <div class="game-header">
+      <span class="game-title">Tres en Raya</span>
+      <button class="btn btn-ghost" style="padding:8px 16px;font-size:0.7rem" onclick="goto('screen-inicio')">SALIR</button>
+    </div>
+
+    <div class="score-row">
+      <div class="score-card active-x" id="card-x">
+        <div class="score-label lx">Jugador X</div>
+        <div class="score-num" id="score-x">0</div>
+      </div>
+      <div class="score-card" id="card-tie">
+        <div class="score-label lt">Empates</div>
+        <div class="score-num" id="score-tie">0</div>
+      </div>
+      <div class="score-card" id="card-o">
+        <div class="score-label lo">Jugador O</div>
+        <div class="score-num" id="score-o">0</div>
+      </div>
+    </div>
+
+    <p class="turn-indicator tx" id="turn-text">Turno de X</p>
+
+    <div class="board" id="board">
+      <div class="cell" onclick="play(0)"></div>
+      <div class="cell" onclick="play(1)"></div>
+      <div class="cell" onclick="play(2)"></div>
+      <div class="cell" onclick="play(3)"></div>
+      <div class="cell" onclick="play(4)"></div>
+      <div class="cell" onclick="play(5)"></div>
+      <div class="cell" onclick="play(6)"></div>
+      <div class="cell" onclick="play(7)"></div>
+      <div class="cell" onclick="play(8)"></div>
+    </div>
+
+    <button class="btn btn-ghost" onclick="initGame()">REINICIAR RONDA</button>
+  </div>
+
+  <!-- PANTALLA RESULTADO -->
+  <div class="screen" id="screen-resultado">
+    <div class="result-icon" id="result-icon"></div>
+    <div class="result-title" id="result-title"></div>
+    <div class="result-sub" id="result-sub"></div>
+    <div class="result-scores">
+      <div class="rs-item">
+        <div class="rs-label">Jugador X</div>
+        <div class="rs-val vx" id="res-x">0</div>
+      </div>
+      <div class="divider"></div>
+      <div class="rs-item">
+        <div class="rs-label">Empates</div>
+        <div class="rs-val vt" id="res-tie">0</div>
+      </div>
+      <div class="divider"></div>
+      <div class="rs-item">
+        <div class="rs-label">Jugador O</div>
+        <div class="rs-val vo" id="res-o">0</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="goto('screen-juego'); initGame()">JUGAR DE NUEVO</button>
+    <button class="btn btn-secondary" onclick="goto('screen-inicio'); resetScores()">MENÚ PRINCIPAL</button>
+  </div>
+
+  <script>
+    // State
+    let board = Array(9).fill(null);
+    let currentPlayer = 'X';
+    let gameOver = false;
+    let scores = { X: 0, O: 0, tie: 0 };
+
+    const WINS = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+
+    function goto(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function initGame() {
+      board = Array(9).fill(null);
+      currentPlayer = 'X';
+      gameOver = false;
+      document.querySelectorAll('.cell').forEach(c => {
+        c.textContent = '';
+        c.className = 'cell';
+        c.onclick = function() { play([...document.querySelectorAll('.cell')].indexOf(c)); };
+      });
+      updateTurnUI();
+    }
+
+    function resetScores() {
+      scores = { X: 0, O: 0, tie: 0 };
+    }
+
+    function updateTurnUI() {
+      const t = document.getElementById('turn-text');
+      t.textContent = `Turno de ${currentPlayer}`;
+      t.className = `turn-indicator t${currentPlayer.toLowerCase()}`;
+      document.getElementById('card-x').className = 'score-card' + (currentPlayer === 'X' ? ' active-x' : '');
+      document.getElementById('card-o').className = 'score-card' + (currentPlayer === 'O' ? ' active-o' : '');
+    }
+
+    function play(index) {
+      if (gameOver || board[index]) return;
+      board[index] = currentPlayer;
+
+      const cells = document.querySelectorAll('.cell');
+      const cell = cells[index];
+      cell.textContent = currentPlayer;
+      cell.classList.add('taken', `c${currentPlayer.toLowerCase()}`);
+
+      const winner = checkWinner();
+      if (winner) {
+        winner.forEach(i => cells[i].classList.add('win-cell'));
+        gameOver = true;
+        scores[currentPlayer]++;
+        updateScoreDisplay();
+        setTimeout(() => showResult(currentPlayer), 800);
+        return;
+      }
+
+      if (board.every(b => b)) {
+        gameOver = true;
+        scores.tie++;
+        updateScoreDisplay();
+        setTimeout(() => showResult(null), 800);
+        return;
+      }
+
+      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      updateTurnUI();
+    }
+
+    function checkWinner() {
+      for (const [a,b,c] of WINS) {
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) return [a,b,c];
+      }
+      return null;
+    }
+
+    function updateScoreDisplay() {
+      document.getElementById('score-x').textContent = scores.X;
+      document.getElementById('score-o').textContent = scores.O;
+      document.getElementById('score-tie').textContent = scores.tie;
+    }
+
+    function showResult(winner) {
+      document.getElementById('res-x').textContent = scores.X;
+      document.getElementById('res-o').textContent = scores.O;
+      document.getElementById('res-tie').textContent = scores.tie;
+
+      const icon = document.getElementById('result-icon');
+      const title = document.getElementById('result-title');
+      const sub = document.getElementById('result-sub');
+
+      if (winner) {
+        icon.textContent = winner;
+        icon.className = `result-icon r${winner.toLowerCase()}`;
+        title.textContent = `¡Jugador ${winner} Gana!`;
+        sub.textContent = '¡Felicitaciones!';
+      } else {
+        icon.textContent = '⚡';
+        icon.className = 'result-icon rt';
+        title.textContent = '¡Empate!';
+        sub.textContent = 'Nadie ganó esta vez';
+      }
+
+      goto('screen-resultado');
+    }
+  </script>
+</body>
+</html>
